@@ -1,12 +1,15 @@
 class Sunburst{
 
 
-    constructor(sliderMin, sliderMax, indicatorValue, rootName, selectedOptions){
+    constructor(sliderMin, sliderMax, indicatorValue, rootName, selectedOptions, selectedRemovals, tab4Boolean){
         this.sliderMin = sliderMin
         this.sliderMax = sliderMax
         this.indicatorValue = indicatorValue
         this.rootName = rootName
         this.selectedOptions = selectedOptions
+        this.selectedRemovals = selectedRemovals
+        this.tab4Boolean = tab4Boolean
+        // console.log(this.selectedRemovals)
     }
 
     rendering(structureData){
@@ -19,43 +22,43 @@ class Sunburst{
         }
 
         if (this.indicatorValue === 'tab1'){
-            let tab1Viz = new Tab1Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames)
+            let tab1Viz = new Tab1Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames, this.selectedRemovals)
             Tab1Viz.Tab1VizData = structureData
             tab1Viz.renderLegend()
             tab1Viz.render()
         }
         else if (this.indicatorValue === 'tab2'){
-            let tab2Viz = new Tab2Viz(this.rootName, this.selectedOptions, structureData, classNames)
+            let tab2Viz = new Tab2Viz(this.rootName, this.selectedOptions, structureData, classNames, this.selectedRemovals)
             Tab2Viz.Tab2VizData = structureData
             tab2Viz.renderLegend()
             tab2Viz.fillDropDown()
         }
         else if (this.indicatorValue === 'tab3'){
-            let tab3Viz = new Tab3Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames)
+            let tab3Viz = new Tab3Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames, this.selectedRemovals)
             Tab3Viz.Tab3VizData = structureData
             tab3Viz.renderLegend()
             tab3Viz.fillDropDown()
         }
         else if (this.indicatorValue === 'tab4'){
-            let tab4Viz = new Tab4Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames)
+            let tab4Viz = new Tab4Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames, this.selectedRemovals, this.tab4Boolean)
             Tab4Viz.Tab4VizData = structureData
             tab4Viz.renderLegend()
             tab4Viz.fillDropDown()
         }
         else if (this.indicatorValue === 'tab5'){
-            let tab5Viz = new Tab5Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames)
+            let tab5Viz = new Tab5Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames, this.selectedRemovals)
             Tab5Viz.Tab5VizData = structureData
             tab5Viz.renderLegend()
             tab5Viz.render()
         }
         else if (this.indicatorValue === 'tab6'){
-            let tab6Viz = new Tab6Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames)
+            let tab6Viz = new Tab6Viz(this.sliderMin, this.sliderMax, this.rootName, this.selectedOptions, structureData, classNames, this.selectedRemovals)
             Tab6Viz.Tab6VizData = structureData
             tab6Viz.renderLegend()
             tab6Viz.render()
         }
         else if (this.indicatorValue === 'tab7'){
-            let tab7Viz = new Tab7Viz(this.rootName, this.selectedOptions, structureData, classNames)
+            let tab7Viz = new Tab7Viz(this.rootName, this.selectedOptions, structureData, classNames, this.selectedRemovals)
             Tab7Viz.Tab7VizData = structureData
             tab7Viz.renderLegend()
             tab7Viz.fillDropDown()

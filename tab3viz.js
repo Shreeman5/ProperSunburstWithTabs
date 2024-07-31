@@ -3,7 +3,7 @@ class Tab3Viz{
     static Tab3VizRootName
     static Tab3VizData
 
-    constructor(sliderMin, sliderMax, rootName, selectedOptions, structureData, classNames){
+    constructor(sliderMin, sliderMax, rootName, selectedOptions, structureData, classNames, selectedRemovals){
         this.sliderMin = sliderMin
         this.sliderMax = sliderMax
         this.rootName = rootName
@@ -11,6 +11,7 @@ class Tab3Viz{
         this.structureData = structureData
         this.classNames = classNames
         Tab3Viz.Tab3VizRootName = rootName
+        this.selectedRemovals = selectedRemovals
     }
 
     renderLegend(){
@@ -400,16 +401,21 @@ class Tab3Viz{
         } 
     
         let lastIndex = nodeName.lastIndexOf('__')
+        let firstIndex = nodeName.indexOf('__')
+        let taxonName = nodeName.substring(firstIndex+2, lastIndex)
         let taxonID = nodeName.substring(lastIndex + 2)
-        let cdf = findTaxonCDFbyID(cdfContainerData, taxonID)
+
+        // let cdf = findTaxonCDFbyID(cdfContainerData, taxonID)
+        let cdf = findTaxonCDFbyName(cdfContainerData, taxonName)
         if (cdf === null){
-            cdf = 'N/A'
+            cdf = '0%'
         }
         else{
             cdf = (parseFloat(cdf) * 100).toFixed(3) + '%'
         }
     
-        let myVal = findNodeValueByName(cdfContainerData, taxonID)
+        // let myVal = findNodeValueByID(cdfContainerData, taxonID)
+        let myVal = findNodeValueByName(cdfContainerData, taxonName)
         if (myVal === undefined){
             myVal = 0 + '%'
         }
@@ -494,16 +500,37 @@ class Tab3Viz{
 
             data = findChildByName(data, Tab3Viz.Tab3VizRootName)
 
+            let that = this
+            function processData(data) {
+                if (data && typeof data === 'object' && data.children && Array.isArray(data.children)) {
+                  assignValues(data);
+                } else {
+                  console.error("The data structure is not recognized or does not have a 'children' property.");
+                }
+            }
+
+            processData(data);
+
+
+            let hierarchy = d3.hierarchy(data).sum(d => d.value).sort((a, b) => b.value - a.value);
             let partition = d3.partition()
                     .size([2 * Math.PI, 100]);
-    
-            let hierarchy = d3.hierarchy(data)
-                .sum(function(d) { 
-                    return d.value; 
-                })
-                .sort(function(a, b) { return b.value - a.value; });
 
             let root = partition(hierarchy);
+
+            let arr = this.selectedRemovals
+            // Reassign children and remove nodes at depth x
+            for (let i = 0; i < arr.length; i++){
+                let numbers = arr[i]
+                let w = numbers[0]
+                let x = numbers[1]
+                root = reassignChildren(root, w, x); // Modify hierarchy
+                // console.log("Before recalculation:", root);
+                // root = this.recalculateValues(root); // Update node values based on number of children
+                // console.log("After recalculation:", root);
+                root = adjustDepths(root, x); // Adjust depths if needed
+                root = partition(root); // Reapply pack layout
+            }
             
             let findIN = new FindIndicators(this.structureData[1])
             let [myArray, myArray2, myArray3, myArray4] = findIN.returnIndicators()
@@ -545,7 +572,7 @@ class Tab3Viz{
                 }
             });
 
-            let arc = createArc(checkedLevels)//checkedLevels
+            let arc = createArc(findMaxDepth(root) - 1)//checkedLevels
             let colorScaleLow = d3.scaleLinear()
                        .domain([0, sliderMin])
                        .range(["#0200b9", "#00fff3"]);
@@ -555,7 +582,7 @@ class Tab3Viz{
                         .range(["#ff0000", "#7b0000"]);
 
             // console.log(selectedDataArray[i+3])
-            let that = this
+            // let that = this
             svg.selectAll("path")
                 .data(root.descendants().slice(1))
                 .enter().append("path")
@@ -565,10 +592,13 @@ class Tab3Viz{
                 .style("fill", function(d) { 
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
                     // console.log(selectedDataArray[i])
                     if (i % 2 === 0){
-                        let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                         // console.log(cdf)
                         if (cdf === null){
                             return "white"
@@ -597,9 +627,11 @@ class Tab3Viz{
                         }
                     }
                     else{
-                        let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        let myWeight = findTaxonWeightbyName(transformedData, taxonName)
                         if (myWeight === null){         
-                            let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                             if (cdf === null){
                                 return "white"
                             }
@@ -636,10 +668,13 @@ class Tab3Viz{
                 .style("stroke", function(d){
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
                     // console.log(selectedDataArray[i])
                     if (i % 2 === 0){
-                        let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                         // console.log(cdf)
                         if (cdf === null){
                             return "grey"
@@ -649,9 +684,11 @@ class Tab3Viz{
                         }
                     }
                     else{
-                        let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        let myWeight = findTaxonWeightbyName(transformedData, taxonName)
                         if (myWeight === null){         
-                            let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                             if (cdf === null){
                                 return "grey"
                             }
@@ -667,10 +704,13 @@ class Tab3Viz{
                 .style("opacity", function(d){
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
 
                     if (i % 2 === 0){
-                        let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                         if (cdf === null){
                             return "0.1"
                         }
@@ -679,9 +719,11 @@ class Tab3Viz{
                         }
                     }
                     else{
-                        let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        let myWeight = findTaxonWeightbyName(transformedData, taxonName)
                         if (myWeight === null){         
-                            let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                             if (cdf === null){
                                 return "0.1"
                             }
@@ -721,7 +763,7 @@ class Tab3Viz{
                         console.log('here')
                         Tab3Viz.Tab3VizRootName = p.data.name
                         console.log('X:', Tab3Viz.Tab3VizRootName)
-
+                        that.selectedRemovals = []
                         removeVizDivs()
                         renderVizDivs(that.selectedOptions.length, 'tab3')
                         removeLegendDivs()
@@ -753,6 +795,8 @@ class Tab3Viz{
                     console.log('D:', Tab3Viz.Tab3VizRootName)
                     if (Tab3Viz.Tab3VizRootName !== undefined){
                         if (Tab3Viz.Tab3VizRootName === 'sk__Bacteria__2'){
+                            that.selectedRemovals = []
+                            enableCheckboxes2()
                             removeVizDivs()
                             renderVizDivs(that.selectedOptions.length, 'tab3')
                             removeLegendDivs()

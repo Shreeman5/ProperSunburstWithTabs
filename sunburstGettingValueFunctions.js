@@ -3,6 +3,11 @@ function findTaxonCDFbyID(dataArray, taxonId) {
     return element ? element.CDF : null; // Return the taxon_rank_level if found, else return null
 }
 
+function findTaxonCDFbyName(dataArray, taxonName){
+    const element = dataArray.find(item => item.name === taxonName);
+    return element ? element.CDF : null; // Return the taxon_rank_level if found, else return null
+}
+
 
 function findTaxonWeightbyID(dataArray, taxonId){
     for (let obj of dataArray) {
@@ -13,9 +18,27 @@ function findTaxonWeightbyID(dataArray, taxonId){
     return null; // Return null if no match found
 }
 
+function findTaxonWeightbyName(dataArray, taxonName){
+    for (let obj of dataArray) {
+        if (obj.organism === taxonName) {
+            return obj.weight;
+        }
+    }
+    return null; // Return null if no match found
+}
+
 function findNamesbyID(dataArray, taxonId){
     for (let obj of dataArray) {
         if (obj.ncbi_taxon_id === taxonId) {
+            return obj.action;
+        }
+    }
+    return null; // Return null if no match found
+}
+
+function findNamesbyName(dataArray, taxonName){
+    for (let obj of dataArray) {
+        if (obj.organism === taxonName) {
             return obj.action;
         }
     }
@@ -105,7 +128,73 @@ function findParentByName(node, targetName, parent = null) {
 }
 
 
-function findNodeValueByName(dataArray, taxonId) {
+function findNodeValueByID(dataArray, taxonId) {
     const element = dataArray.find(item => item.ncbi_taxon_id === taxonId);
     return element ? element.relative_abundance : null; // Return the taxon_rank_level if found, else return null
+}
+
+function findNodeValueByName(dataArray, taxonName) {
+    const element = dataArray.find(item => item.name === taxonName);
+    return element ? element.relative_abundance : null; // Return the taxon_rank_level if found, else return null
+}
+
+
+
+function assignValues(node) {
+    if (!node.children || node.children.length === 0) {
+      // Leaf node
+      node.value = 1; // or another default value if necessary
+    } else {
+      // Non-leaf node
+    //   node.value = node.children.length;
+      // Recursively process children
+      for (let child of node.children) {
+        this.assignValues(child);
+      }
+    }
+}
+
+
+function reassignChildren(root, w, x) {
+    root.each(node => {
+        if (node.depth === x && node.children) {
+            node.children.forEach(child => {
+                let ancestor = node.parent;
+                while (ancestor && ancestor.depth !== w) {
+                    ancestor = ancestor.parent;
+                }
+                if (ancestor) {
+                    ancestor.children = ancestor.children || [];
+                    ancestor.children.push(child);
+                    child.parent = ancestor;
+                }
+            });
+            if (node.parent) {
+                node.parent.children = node.parent.children.filter(n => n !== node);
+            }
+        }
+    });
+
+    root.eachBefore(node => {
+        if (node.depth === x && (!node.children || node.children.length === 0)) {
+            if (node.parent) {
+                node.parent.children = node.parent.children.filter(n => n !== node);
+            }
+        }
+        if (node.children && node.children.length === 0) {
+            delete node.children;
+        }
+    });
+
+    return root;
+}
+
+
+function adjustDepths(root, removedDepth) {
+    root.each(node => {
+        if (node.depth > removedDepth) {
+            node.depth -= 1;
+        }
+    });
+    return root;
 }

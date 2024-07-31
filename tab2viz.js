@@ -3,12 +3,13 @@ class Tab2Viz{
     static Tab2VizRootName
     static Tab2VizData
 
-    constructor(rootName, selectedOptions, structureData, classNames){
+    constructor(rootName, selectedOptions, structureData, classNames, selectedRemovals){
         this.rootName = rootName
         this.selectedOptions = selectedOptions
         this.structureData = structureData
         this.classNames = classNames
         Tab2Viz.Tab2VizRootName = rootName
+        this.selectedRemovals = selectedRemovals
     }
 
 
@@ -160,16 +161,21 @@ class Tab2Viz{
         } 
     
         let lastIndex = nodeName.lastIndexOf('__')
+        let firstIndex = nodeName.indexOf('__')
+        let taxonName = nodeName.substring(firstIndex+2, lastIndex)
         let taxonID = nodeName.substring(lastIndex + 2)
-        let cdf = findTaxonCDFbyID(cdfContainerData, taxonID)
+
+        // let cdf = findTaxonCDFbyID(cdfContainerData, taxonID)
+        let cdf = findTaxonCDFbyName(cdfContainerData, taxonName)
         if (cdf === null){
-            cdf = 'N/A'
+            cdf = '0%'
         }
         else{
             cdf = (parseFloat(cdf) * 100).toFixed(3) + '%'
         }
     
-        let myVal = findNodeValueByName(cdfContainerData, taxonID)
+        // let myVal = findNodeValueByID(cdfContainerData, taxonID)
+        let myVal = findNodeValueByName(cdfContainerData, taxonName)
         if (myVal === undefined){
             myVal = 0 + '%'
         }
@@ -309,7 +315,7 @@ class Tab2Viz{
         // console.log(myRow)
 
         let transformedData = this.transformObject(myRow);
-        // console.log(transformedData)
+        console.log(transformedData)
 
 
         for (let i = 0; i < this.classNames.length; i++) {
@@ -341,16 +347,37 @@ class Tab2Viz{
             // if (this.rootName !== 'sk__Bacteria__2'){
             data = findChildByName(data, Tab2Viz.Tab2VizRootName)
 
+            let that = this
+            function processData(data) {
+                if (data && typeof data === 'object' && data.children && Array.isArray(data.children)) {
+                  assignValues(data);
+                } else {
+                  console.error("The data structure is not recognized or does not have a 'children' property.");
+                }
+            }
+
+            processData(data);
+
+
+            let hierarchy = d3.hierarchy(data).sum(d => d.value).sort((a, b) => b.value - a.value);
             let partition = d3.partition()
                     .size([2 * Math.PI, 100]);
-    
-            let hierarchy = d3.hierarchy(data)
-                .sum(function(d) { 
-                    return d.value; 
-                })
-                .sort(function(a, b) { return b.value - a.value; });
 
             let root = partition(hierarchy);
+
+            let arr = this.selectedRemovals
+            // Reassign children and remove nodes at depth x
+            for (let i = 0; i < arr.length; i++){
+                let numbers = arr[i]
+                let w = numbers[0]
+                let x = numbers[1]
+                root = reassignChildren(root, w, x); // Modify hierarchy
+                // console.log("Before recalculation:", root);
+                // root = this.recalculateValues(root); // Update node values based on number of children
+                // console.log("After recalculation:", root);
+                root = adjustDepths(root, x); // Adjust depths if needed
+                root = partition(root); // Reapply pack layout
+            }
             
             let findIN = new FindIndicators(this.structureData[1])
             let [myArray, myArray2, myArray3, myArray4] = findIN.returnIndicators()
@@ -385,16 +412,16 @@ class Tab2Viz{
             });
 
             
-            let checkedLevels = []
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(function(checkbox) {
-                if (checkbox.checked) {
-                    checkedLevels.push(parseInt(checkbox.value))
-                }
-            });
+            // let checkedLevels = []
+            // const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            // checkboxes.forEach(function(checkbox) {
+            //     if (checkbox.checked) {
+            //         checkedLevels.push(parseInt(checkbox.value))
+            //     }
+            // });
 
-            let arc = createArc(checkedLevels)//checkedLevels
-            let that = this
+            let arc = createArc(findMaxDepth(root) - 1)//checkedLevels
+            // let that = this
             svg.selectAll("path")
                 .data(root.descendants().slice(1))
                 .enter().append("path")
@@ -404,77 +431,104 @@ class Tab2Viz{
                 .style("fill", function(d) { 
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
-                    let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+
+                    // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                    let myWeight = findTaxonWeightbyName(transformedData, taxonName)
+                    
                     if (myWeight === null){
                         return "white"
                     }
                     else{
-                        let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
-
-                        if (cdf === null){
-                            return "white"
+                        
+                        if (myWeight > 0){
+                            // console.log('here')
+                            return "red"
                         }
                         else{
-                            if (myWeight > 0){
-                                return "red"
-                            }
-                            else{
-                                return "blue"
-                            }
+                            // console.log('here2')
+                            return "blue"
                         }
+                        // console.log('A: ', myWeight)
+                        // console.log('B:', myWeight2)
+
+                        // let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                        // let cdf = findTaxonCDFbyName(that.structureData[i+2], taxonName)
+
+                        // if (cdf === null){
+                        //     return "white"
+                        // }
+                        // else{
+                            
+                        //     // console.log('D: ', taxonName)
+                        //     if (myWeight > 0){
+                        //         return "red"
+                        //     }
+                        //     else{
+                        //         return "blue"
+                        //     }
+                        // }
                     }
                 })
                 .style("stroke", function(d){
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
-                    let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+
+                    // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                    let myWeight = findTaxonWeightbyName(transformedData, taxonName)
+
                     if (myWeight === null){
                         return "grey"
                     }
                     else{
-                        let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
-                        if (cdf === null){
-                            return "grey"
-                        }
-                        else{
-                            return "black"
-                        }
+                        return "black"
+                        // let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                        // let cdf = findTaxonCDFbyName(that.structureData[i+2], taxonName)
+
+                        // if (cdf === null){
+                        //     return "grey"
+                        // }
+                        // else{
+                        //     return "black"
+                        // }
                     }
                 })
                 .style("opacity", function(d){
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
-                    let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+
+                    // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                    let myWeight = findTaxonWeightbyName(transformedData, taxonName)
+
                     if (myWeight === null){
                         return "0.1"
                     }
                     else{
-                        let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
-                        if (cdf === null){
-                            return "0.1"
-                        }
-                        else{
-                            return "1"
-                        }
+                        return "1"
+                        // let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                        // let cdf = findTaxonCDFbyName(that.structureData[i+2], taxonName)
+
+                        // if (cdf === null){
+                        //     return "0.1"
+                        // }
+                        // else{
+                        //     return "1"
+                        // }
                     }
                 }) 
                 .style("stroke-width", function(d){
-                    // console.log('here')
-                    if (d.depth === 1){
-                        return "1"
-                    }
-                    else if (d.depth >= 4){
-                        return "0.1" //"0.5"
-                    }
-                    else{
-                        return "0.5"//"0.5"
-                    }
+                    return "1"
                 })
                 .on("click", function(event, p){
-                    console.log('Y: ', p.children)
+                    // console.log('Y: ', p.children)
 
                     let found = 0
                     let myArr = p.children
@@ -486,10 +540,10 @@ class Tab2Viz{
                     } 
                     if (found = 1){
 
-                        console.log('here')
+                        // console.log('here')
                         Tab2Viz.Tab2VizRootName = p.data.name
-                        console.log('X:', Tab2Viz.Tab2VizRootName)
-
+                        // console.log('X:', Tab2Viz.Tab2VizRootName)
+                        that.selectedRemovals = []
                         removeVizDivs()
                         renderVizDivs(that.selectedOptions.length, 'tab2')
                         removeLegendDivs()
@@ -521,6 +575,8 @@ class Tab2Viz{
                     console.log('D:', Tab2Viz.Tab2VizRootName)
                     if (Tab2Viz.Tab2VizRootName !== undefined){
                         if (Tab2Viz.Tab2VizRootName === 'sk__Bacteria__2'){
+                            that.selectedRemovals = []
+                            enableCheckboxes2()
                             removeVizDivs()
                             renderVizDivs(that.selectedOptions.length, 'tab2')
                             removeLegendDivs()

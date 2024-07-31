@@ -60,7 +60,8 @@ function sortHierarchy(node, maxNodeName) {
 }
 
 
-function createArc(checkedLevels){
+function createArc(maxDepth){
+    // console.log(maxDepth)
     return d3.arc()
             .startAngle(function(d) { 
                 return d.x0; 
@@ -70,18 +71,18 @@ function createArc(checkedLevels){
             })
             .innerRadius(function(d) { 
                 // console.log(value, d)
-                let val = innerRadius(d, checkedLevels);
+                let val = innerRadius(d, maxDepth);
                 return val; 
             })
             .outerRadius(function(d) { 
-                let val = outerRadius(d, checkedLevels);
+                let val = outerRadius(d, maxDepth);
                 return val; 
             });
 }
 
 
-function innerRadius(d, checkedLevels){
-    if (checkedLevels.length === 7){
+function innerRadius(d, maxDepth){
+    if (maxDepth === 7){
         // console.log('here')
         if (d.depth === 7){
             return 468//1515
@@ -105,89 +106,89 @@ function innerRadius(d, checkedLevels){
             return 30
         }
     }
-    if (checkedLevels.length === 6){
-        if (d.depth === checkedLevels[5]){
+    if (maxDepth === 6){
+        if (d.depth === 6){
             return 459
         }
-        if (d.depth === checkedLevels[4]){
+        if (d.depth === 5){
             return 388
         }
-        if (d.depth === checkedLevels[3]){
+        if (d.depth === 4){
             return 317
         }
-        if (d.depth === checkedLevels[2]){
+        if (d.depth === 3){
             return 246
         }
-        if (d.depth === checkedLevels[1]){
+        if (d.depth === 2){
             return 175
         }
-        else if (d.depth === checkedLevels[0]){
+        else if (d.depth === 1){
             return 30
         }
     }
-    if (checkedLevels.length === 5){
-        if (d.depth === checkedLevels[4]){
+    if (maxDepth === 5){
+        if (d.depth === 5){
             return 447
         }
-        if (d.depth === checkedLevels[3]){
+        if (d.depth === 4){
             return 364
         }
-        if (d.depth === checkedLevels[2]){
+        if (d.depth === 3){
             return 281
         }
-        if (d.depth === checkedLevels[1]){
+        if (d.depth === 2){
             return 198
         }
-        else if (d.depth === checkedLevels[0]){
+        else if (d.depth === 1){
             return 30
         }
     }
-    if (checkedLevels.length === 4){
-        if (d.depth === checkedLevels[3]){
+    if (maxDepth === 4){
+        if (d.depth === 4){
             return 430
         }
-        if (d.depth === checkedLevels[2]){
+        if (d.depth === 3){
             return 330
         }
-        if (d.depth === checkedLevels[1]){
+        if (d.depth === 2){
             return 230
         }
-        if (d.depth === checkedLevels[0]){
+        if (d.depth === 1){
             return 30
         }
     }
-    if (checkedLevels.length === 3){
-        if (d.depth === checkedLevels[2]){
+    if (maxDepth === 3){
+        if (d.depth === 3){
             return 405
         }
-        if (d.depth === checkedLevels[1]){
+        if (d.depth === 2){
             return 280
         }
-        else if (d.depth === checkedLevels[0]){
+        else if (d.depth === 1){
             return 30
         }
     }
-    if (checkedLevels.length === 2){
-        if (d.depth === checkedLevels[1]){
+    if (maxDepth === 2){
+        if (d.depth === 2){
             return 365
         }
-        else if (d.depth === checkedLevels[0]){
+        else if (d.depth === 1){
             return 30
         }
     }
-    if (checkedLevels.length === 1){
-        if (d.depth === checkedLevels[0]){
+    if (maxDepth === 1){
+        if (d.depth === 1){
             return 30
         }
     }
-    if (checkedLevels.length === 0){
+    if (maxDepth === 0){
         return 0
     }
 }
 
 
-function outerRadius(d, checkedLevels){
-    if (checkedLevels.length === 7){
+function outerRadius(d, maxDepth){
+    if (maxDepth === 7){
         if (d.depth === 7){
             return 530 //1730
         }
@@ -210,82 +211,82 @@ function outerRadius(d, checkedLevels){
             return 155 //460
         }
     }
-    if (checkedLevels.length === 6){
-        if (d.depth === checkedLevels[5]){
+    if (maxDepth === 6){
+        if (d.depth === 6){
             return 530 //1730
         }
-        if (d.depth === checkedLevels[4]){
+        if (d.depth === 5){
             return 459 //1487
         }
-        if (d.depth === checkedLevels[3]){
+        if (d.depth === 4){
             return 388 //1244
         }
-        if (d.depth === checkedLevels[2]){
+        if (d.depth === 3){
             return 317 //1001
         }
-        if (d.depth === checkedLevels[1]){
+        if (d.depth === 2){
             return 246 //758
         }
-        else if (d.depth === checkedLevels[0]){
+        else if (d.depth === 1){
             return 175 //515
         }
     }
-    if (checkedLevels.length === 5){
-        if (d.depth === checkedLevels[4]){
+    if (maxDepth === 5){
+        if (d.depth === 5){
             return 530 //1730
         }
-        if (d.depth === checkedLevels[3]){
+        if (d.depth === 4){
             return 447 //1449
         }
-        if (d.depth === checkedLevels[2]){
+        if (d.depth === 3){
             return 364 //1166
         }
-        if (d.depth === checkedLevels[1]){
+        if (d.depth === 2){
             return 281 //883
         }
-        else if (d.depth === checkedLevels[0]){
+        else if (d.depth === 1){
             return 198 //600
         }
     }
-    if (checkedLevels.length === 4){
-        if (d.depth === checkedLevels[3]){
+    if (maxDepth === 4){
+        if (d.depth === 4){
             return 530 //1730
         }
-        if (d.depth === checkedLevels[2]){
+        if (d.depth === 3){
             return 430 //1390
         }
-        if (d.depth === checkedLevels[1]){
+        if (d.depth === 2){
             return 330 //1050
         }
-        if (d.depth === checkedLevels[0]){
+        if (d.depth === 1){
             return 230 //710
         }
     }
-    if (checkedLevels.length === 3){
-        if (d.depth === checkedLevels[2]){
+    if (maxDepth === 3){
+        if (d.depth === 3){
             return 530 //1730
         }
-        if (d.depth === checkedLevels[1]){
+        if (d.depth === 2){
             return 405 //1305
         }
-        else if (d.depth === checkedLevels[0]){
+        else if (d.depth === 1){
             return 280 //880
         }
     }
-    if (checkedLevels.length === 2){
-        if (d.depth === checkedLevels[1]){
+    if (maxDepth === 2){
+        if (d.depth === 2){
             return 530 //1730
         }
-        else if (d.depth === checkedLevels[0]){
+        else if (d.depth === 1){
             return 365 //1165
         }
     }
-    if (checkedLevels.length === 1){
-        if (d.depth === checkedLevels[0]){
+    if (maxDepth === 1){
+        if (d.depth === 1){
             return 530 //1730
         }
     }
-    if (checkedLevels.length === 0){
+    if (maxDepth === 0){
         return 0
     }
 }
@@ -331,3 +332,33 @@ function enableCheckboxes(){
     let checkbox7 = d3.select('#checkbox7')
     checkbox7.property("disabled", false)
 }
+
+function enableCheckboxes2(){
+    let checkbox1 = d3.select('#checkbox1')
+    checkbox1.property("checked", true)
+    let checkbox2 = d3.select('#checkbox2')
+    checkbox2.property("checked", true)
+    let checkbox3 = d3.select('#checkbox3')
+    checkbox3.property("checked", true)
+    let checkbox4 = d3.select('#checkbox4')
+    checkbox4.property("checked", true)
+    let checkbox5 = d3.select('#checkbox5')
+    checkbox5.property("checked", true)
+    let checkbox6 = d3.select('#checkbox6')
+    checkbox6.property("checked", true)
+    let checkbox7 = d3.select('#checkbox7')
+    checkbox7.property("checked", true)
+}
+
+
+function findMaxDepth(node) {
+    if (!node || !node.children || node.children.length === 0) {
+      return 1; // Base case: if there are no children, the depth is 1
+    }
+  
+    // Recursively find the depth of each child
+    const childDepths = node.children.map(findMaxDepth);
+  
+    // Return the maximum depth found plus one for the current level
+    return Math.max(...childDepths) + 1;
+  }

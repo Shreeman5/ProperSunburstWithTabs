@@ -3,7 +3,7 @@ class Tab1Viz{
     static Tab1VizRootName
     static Tab1VizData
 
-    constructor(sliderMin, sliderMax, rootName, selectedOptions, structureData, classNames){
+    constructor(sliderMin, sliderMax, rootName, selectedOptions, structureData, classNames, selectedRemovals){
         this.sliderMin = sliderMin
         this.sliderMax = sliderMax
         this.rootName = rootName
@@ -12,6 +12,7 @@ class Tab1Viz{
         this.classNames = classNames
         Tab1Viz.Tab1VizRootName = rootName
         // Tab1Viz.Tab1VizData = structureData
+        this.selectedRemovals = selectedRemovals
     }
 
 
@@ -249,7 +250,12 @@ class Tab1Viz{
             .style("stroke", "black")
             .style("stroke-width", 5);
             
-        
+            // let nodeName = d.data.name
+            // let lastIndex = nodeName.lastIndexOf('__')
+            
+            // let taxonID = nodeName.substring(lastIndex + 2)
+
+
         let myVar = p.data.name
         let myNames = myVar.split("__")
         let index = myVar.indexOf("_")
@@ -259,16 +265,20 @@ class Tab1Viz{
         } 
     
         let lastIndex = nodeName.lastIndexOf('__')
+        let firstIndex = nodeName.indexOf('__')
+        let taxonName = nodeName.substring(firstIndex+2, lastIndex)
         let taxonID = nodeName.substring(lastIndex + 2)
-        let cdf = findTaxonCDFbyID(cdfContainerData, taxonID)
+        // let cdf = findTaxonCDFbyID(cdfContainerData, taxonID)
+        let cdf = findTaxonCDFbyName(cdfContainerData, taxonName)
         if (cdf === null){
-            cdf = 'N/A'
+            cdf = '0%'
         }
         else{
             cdf = (parseFloat(cdf) * 100).toFixed(3) + '%'
         }
     
-        let myVal = findNodeValueByName(cdfContainerData, taxonID)
+        // let myVal = findNodeValueByID(cdfContainerData, taxonID)
+        let myVal = findNodeValueByName(cdfContainerData, taxonName)
         if (myVal === undefined){
             myVal = 0 + '%'
         }
@@ -301,7 +311,6 @@ class Tab1Viz{
         const tooltip = document.getElementById('tooltip');
         tooltip.style.visibility = 'hidden';
     }
-    
 
     render(){
 
@@ -328,28 +337,68 @@ class Tab1Viz{
                 .attr("fill", "black")
                 .text(word)
 
+            
             if (Tab1Viz.Tab1VizRootName !== 'sk__Bacteria__2'){
                 disableCheckboxes()
             }
             else{
+                // console.log('X:', Tab1Viz.Tab1VizRootName)
                 enableCheckboxes()
             }
 
             // if (this.rootName !== 'sk__Bacteria__2'){
+            // console.log(data)
             data = findChildByName(data, Tab1Viz.Tab1VizRootName)
-            // }
-            // console.log(this.rootName)
+            // console.log(data)
 
+
+            let that = this
+            function processData(data) {
+                if (data && typeof data === 'object' && data.children && Array.isArray(data.children)) {
+                  assignValues(data);
+                } else {
+                  console.error("The data structure is not recognized or does not have a 'children' property.");
+                }
+            }
+              
+              // Start processing the data
+            processData(data);
+            // console.log(data)
+
+            // console.log(this.selectedRemovals)
+
+            // Create the initial hierarchy and pack layout
+            let hierarchy = d3.hierarchy(data).sum(d => d.value).sort((a, b) => b.value - a.value);
             let partition = d3.partition()
                     .size([2 * Math.PI, 100]);
-    
-            let hierarchy = d3.hierarchy(data)
-                .sum(function(d) { 
-                    return d.value; 
-                })
-                .sort(function(a, b) { return b.value - a.value; });
 
             let root = partition(hierarchy);
+
+            let arr = this.selectedRemovals
+            // Reassign children and remove nodes at depth x
+            for (let i = 0; i < arr.length; i++){
+                let numbers = arr[i]
+                let w = numbers[0]
+                let x = numbers[1]
+                root = reassignChildren(root, w, x); // Modify hierarchy
+                // console.log("Before recalculation:", root);
+                // root = this.recalculateValues(root); // Update node values based on number of children
+                // console.log("After recalculation:", root);
+                root = adjustDepths(root, x); // Adjust depths if needed
+                root = partition(root); // Reapply pack layout
+            }
+            // console.log(Tab1Viz.Tab1VizRootName)
+            // console.log(root)
+            // let partition = d3.partition()
+            //         .size([2 * Math.PI, 100]);
+    
+            // let hierarchy = d3.hierarchy(data)
+            //     .sum(function(d) { 
+            //         return d.value; 
+            //     })
+            //     .sort(function(a, b) { return b.value - a.value; });
+
+            // let root = partition(hierarchy);
             
             let findIN = new FindIndicators(this.structureData[1])
             let [myArray, myArray2, myArray3, myArray4] = findIN.returnIndicators()
@@ -386,16 +435,16 @@ class Tab1Viz{
                 }
             });
 
-            let checkedLevels = []
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(function(checkbox) {
-                if (checkbox.checked) {
-                    checkedLevels.push(parseInt(checkbox.value))
-                }
-            });
+            // let checkedLevels = []
+            // const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            // checkboxes.forEach(function(checkbox) {
+            //     if (checkbox.checked) {
+            //         checkedLevels.push(parseInt(checkbox.value))
+            //     }
+            // });
 
  
-            let arc = createArc(checkedLevels)//checkedLevels
+            let arc = createArc(findMaxDepth(root) - 1)//checkedLevels
 
             // cons
             let colorScaleLow = d3.scaleLinear()
@@ -408,7 +457,7 @@ class Tab1Viz{
 
 
 
-            let that = this
+            // that = this
             svg.selectAll("path")
                 .data(root.descendants().slice(1))
                 .enter().append("path")
@@ -418,23 +467,39 @@ class Tab1Viz{
                 .style("fill", function(d) { 
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
-                    let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                    // let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                    let cdf = findTaxonCDFbyName(that.structureData[i+2], taxonName)
+                    
                     // console.log(cdf)
+                    // console.log('A: ', nodeName)
+                    // console.log('B:', taxonName)
                     if (cdf === null){
                         // console.log('yes')
                         return "white"
                     }
                     else{
-                        // console.log(cdf)
                         if (cdf < 0){
                             return colorScaleLow(0)
                         }
                         else if (cdf >= 0 && cdf < sliderMin){
-                            return colorScaleLow(cdf)
+                            if (sliderMin === 0){
+                                return "purple"
+                            }
+                            else{
+                                return colorScaleLow(cdf)
+                            }
                         }
                         else if (cdf >= sliderMax && cdf <= 1){
-                            return colorScaleHigh(cdf)
+                            // console.log('A:', cdf)
+                            if (sliderMax === 1){
+                                return "purple"
+                            }
+                            else{
+                                return colorScaleHigh(cdf)
+                            }
                         }
                         else if (cdf > 1){
                             return colorScaleHigh(1)
@@ -447,8 +512,12 @@ class Tab1Viz{
                 .style("stroke", function(d){
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
-                    let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                    // let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                    let cdf = findTaxonCDFbyName(that.structureData[i+2], taxonName)
+
                     if (cdf === null){
                         // console.log('yes')
                         return "grey"
@@ -460,8 +529,11 @@ class Tab1Viz{
                 .style("opacity", function(d){
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
-                    let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                    // let cdf = findTaxonCDFbyID(that.structureData[i+2], taxonID)
+                    let cdf = findTaxonCDFbyName(that.structureData[i+2], taxonName)
                     // console.log(cdf)
                     if (cdf === null){
                         // console.log('yes')
@@ -472,18 +544,10 @@ class Tab1Viz{
                     }
                 }) 
                 .style("stroke-width", function(d){
-                    if (d.depth === 1){
-                        return "1"
-                    }
-                    else if (d.depth >= 4){
-                        return "0.1" //"0.5"
-                    }
-                    else{
-                        return "0.5"//"0.5"
-                    }
+                    return "1"
                 })
                 .on("click", function(event, p){
-                    console.log('Y: ', p.children)
+                    // console.log('Y: ', p.children)
 
                     let found = 0
                     let myArr = p.children
@@ -497,7 +561,9 @@ class Tab1Viz{
 
                         // console.log('here')
                         Tab1Viz.Tab1VizRootName = p.data.name
-                        console.log('X:', Tab1Viz.Tab1VizRootName)
+                        // console.log('X:', Tab1Viz.Tab1VizRootName)
+                        // disableCheckboxes()
+                        that.selectedRemovals = []
                         removeVizDivs()
                         renderVizDivs(that.selectedOptions.length, 'tab1')
                         removeLegendDivs()
@@ -529,6 +595,8 @@ class Tab1Viz{
                     console.log('D:', Tab1Viz.Tab1VizRootName)
                     if (Tab1Viz.Tab1VizRootName !== undefined){
                         if (Tab1Viz.Tab1VizRootName === 'sk__Bacteria__2'){
+                            that.selectedRemovals = []
+                            enableCheckboxes2()
                             removeVizDivs()
                             renderVizDivs(that.selectedOptions.length, 'tab1')
                             removeLegendDivs()

@@ -118,7 +118,14 @@ function getSelectedOptions() {
 
         removeTabs()
         renderTabs(selectedOptions, activeTabID)
-        let sunburst = new Sunburst(35, 65, activeTabID, "sk__Bacteria__2", selectedOptions)
+        
+        let sunburst
+        if (activeTabID === 'tab4'){
+            sunburst = new Sunburst(35, 65, activeTabID, "sk__Bacteria__2", selectedOptions, [], 'new')
+        }
+        else{
+            sunburst = new Sunburst(35, 65, activeTabID, "sk__Bacteria__2", selectedOptions, [])
+        }
         sunburst.getData(selectedOptions, activeTabID)
     }
 }
@@ -196,7 +203,7 @@ function renderTabs(selectedOptions, activeTabID){
                     renderLegendDivs()
                     removeVizDivs()
                     renderVizDivs(selectedOptions.length, 'tab1')
-                    let sunburst = new Sunburst(35, 65, 'tab1', "sk__Bacteria__2", selectedOptions)
+                    let sunburst = new Sunburst(35, 65, 'tab1', "sk__Bacteria__2", selectedOptions, [])
                     sunburst.getData(selectedOptions, 'tab1')
                 }
                 else if (tabValue === 'tab2'){
@@ -215,7 +222,7 @@ function renderTabs(selectedOptions, activeTabID){
                     renderLegendDivs()
                     removeVizDivs()
                     renderVizDivs(selectedOptions.length, 'tab2')
-                    let sunburst = new Sunburst(35, 65, 'tab2', "sk__Bacteria__2", selectedOptions)
+                    let sunburst = new Sunburst(35, 65, 'tab2', "sk__Bacteria__2", selectedOptions, [])
                     sunburst.getData(selectedOptions, 'tab2')
                 }
                 else if (tabValue === 'tab3'){
@@ -234,7 +241,7 @@ function renderTabs(selectedOptions, activeTabID){
                     renderLegendDivs()
                     removeVizDivs()
                     renderVizDivs(selectedOptions.length, 'tab3')
-                    let sunburst = new Sunburst(35, 65, 'tab3', "sk__Bacteria__2", selectedOptions)
+                    let sunburst = new Sunburst(35, 65, 'tab3', "sk__Bacteria__2", selectedOptions, [])
                     sunburst.getData(selectedOptions, 'tab3')
                 }   
                 else if (tabValue === 'tab4'){
@@ -253,7 +260,7 @@ function renderTabs(selectedOptions, activeTabID){
                     renderLegendDivs()
                     removeVizDivs()
                     renderVizDivs(selectedOptions.length, 'tab4')
-                    let sunburst = new Sunburst(35, 65, 'tab4', "sk__Bacteria__2", selectedOptions)
+                    let sunburst = new Sunburst(35, 65, 'tab4', "sk__Bacteria__2", selectedOptions, [], 'new')
                     sunburst.getData(selectedOptions, 'tab4')
                 }   
                 else if (tabValue === 'tab5'){
@@ -272,7 +279,7 @@ function renderTabs(selectedOptions, activeTabID){
                     renderLegendDivs()
                     removeVizDivs()
                     renderVizDivs(selectedOptions.length, 'tab5')
-                    let sunburst = new Sunburst(35, 65, 'tab5', "sk__Bacteria__2", selectedOptions)
+                    let sunburst = new Sunburst(35, 65, 'tab5', "sk__Bacteria__2", selectedOptions, [])
                     sunburst.getData(selectedOptions, 'tab5')
                 } 
                 else if (tabValue === 'tab6'){
@@ -291,7 +298,7 @@ function renderTabs(selectedOptions, activeTabID){
                     renderLegendDivs()
                     removeVizDivs()
                     renderVizDivs(selectedOptions.length, 'tab6')
-                    let sunburst = new Sunburst(35, 65, 'tab6', "sk__Bacteria__2", selectedOptions)
+                    let sunburst = new Sunburst(35, 65, 'tab6', "sk__Bacteria__2", selectedOptions, [])
                     sunburst.getData(selectedOptions, 'tab6')
                 } 
                 else if (tabValue === 'tab7'){
@@ -310,7 +317,7 @@ function renderTabs(selectedOptions, activeTabID){
                     renderLegendDivs()
                     removeVizDivs()
                     renderVizDivs(selectedOptions.length, 'tab7')
-                    let sunburst = new Sunburst(35, 65, 'tab7', "sk__Bacteria__2", selectedOptions)
+                    let sunburst = new Sunburst(35, 65, 'tab7', "sk__Bacteria__2", selectedOptions, [])
                     sunburst.getData(selectedOptions, 'tab7')
                 } 
         });
@@ -450,7 +457,10 @@ function renderT1Slider(selectedOptions){
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab1')
-        let sunburst = new Sunburst(minValue, maxValue, 'tab1', Tab1Viz.Tab1VizRootName, selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(minValue, maxValue, 'tab1', Tab1Viz.Tab1VizRootName, selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab1')
     }
 }
@@ -638,7 +648,10 @@ function renderT5Slider(selectedOptions){
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab5')
-        let sunburst = new Sunburst(minValue, maxValue, 'tab5', Tab5Viz.Tab5VizRootName, selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(minValue, maxValue, 'tab5', Tab5Viz.Tab5VizRootName, selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab5')
     }
 }
@@ -778,7 +791,10 @@ function renderT6Slider(selectedOptions){
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab6')
-        let sunburst = new Sunburst(minValue, maxValue, 'tab6', Tab6Viz.Tab6VizRootName, selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(minValue, maxValue, 'tab6', Tab6Viz.Tab6VizRootName, selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab6')
     }
 }
@@ -806,9 +822,77 @@ function removeCheckBoxes(){
     checkboxes.innerHTML = ''
 }
 
+function findCheckedStatus(){
+    let arr = []
+    const checkbox = document.querySelector('.checkbox-container #checkbox1');
+    const isChecked = checkbox.checked;
+    // console.log(isChecked);
+    if (isChecked === false){
+        arr.push(1)
+    }
+    const checkbox2 = document.querySelector('.checkbox-container #checkbox2');
+    const isChecked2 = checkbox2.checked;
+    // console.log(isChecked2);
+    if (isChecked2 === false){
+        arr.push(2)
+    }
+    const checkbox3 = document.querySelector('.checkbox-container #checkbox3');
+    const isChecked3 = checkbox3.checked;
+    // console.log(isChecked3);
+    if (isChecked3 === false){
+        arr.push(3)
+    }
+    const checkbox4 = document.querySelector('.checkbox-container #checkbox4');
+    const isChecked4 = checkbox4.checked;
+    // console.log(isChecked4);
+    if (isChecked4 === false){
+        arr.push(4)
+    }
+    const checkbox5 = document.querySelector('.checkbox-container #checkbox5');
+    const isChecked5 = checkbox5.checked;
+    // console.log(isChecked5);
+    if (isChecked5 === false){
+        arr.push(5)
+    }
+    const checkbox6 = document.querySelector('.checkbox-container #checkbox6');
+    const isChecked6 = checkbox6.checked;
+    // console.log(isChecked6);
+    if (isChecked6 === false){
+        arr.push(6)
+    }
+    const checkbox7 = document.querySelector('.checkbox-container #checkbox7');
+    const isChecked7 = checkbox7.checked;
+    // console.log(isChecked7);
+    if (isChecked7 === false){
+        arr.push(7)
+    }
+    return arr
+}
+
+
+function removeAndMap(arr, toRemove) {
+    let X = [];
+    let mapping = arr.slice(); // Keep a copy of the original array for reference
+  
+    toRemove.forEach(num => {
+      let index = arr.indexOf(num);
+      let mappedIndex = mapping.indexOf(num) + 1;
+      if (mappedIndex > 1) {
+        X.push([mappedIndex - 1, mappedIndex]);
+      }
+      else {
+        X.push([0, 1]);
+      }
+      arr.splice(index, 1);
+      mapping.splice(index, 1);
+    });
+    return X;
+}
+
 function checkboxClicked() {
     const selectElement = document.getElementById('multiSelect');
     const selectedOptions = Array.from(selectElement.selectedOptions).map(option => option.value);
+    // console.log(selectedOptions)
 
     let activeTab = document.querySelector('.tab.active');
     // console.log(activeTab.textContent);
@@ -829,11 +913,17 @@ function checkboxClicked() {
         console.log('B:', typeof cxValue2)
         console.log(cxValue1)
         console.log(cxValue2)
+
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        // console.log(removalPositions);
+          
         removeLegendDivs()
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab1')
-        let sunburst = new Sunburst(Number(cxValue1), Number(cxValue2), 'tab1', "sk__Bacteria__2", selectedOptions)
+        let sunburst = new Sunburst(Number(cxValue1), Number(cxValue2), 'tab1', "sk__Bacteria__2", selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab1')
     }
     else if (activeTab.textContent === 'Indicator Organisms for Diseases Heatmap -- Sunburst -- Sample Dependent'){
@@ -841,7 +931,10 @@ function checkboxClicked() {
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab2')
-        let sunburst = new Sunburst(35, 65, 'tab2', "sk__Bacteria__2", selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(35, 65, 'tab2', "sk__Bacteria__2", selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab2')
     }
     else if (activeTab.textContent === 'Changes in Organism Abundance given Actions Heatmap -- Qualitative -- Sunburst -- Sample Dependent'){
@@ -849,7 +942,10 @@ function checkboxClicked() {
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab3')
-        let sunburst = new Sunburst(35, 65, 'tab3', "sk__Bacteria__2", selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(35, 65, 'tab3', "sk__Bacteria__2", selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab3')
     }
     else if (activeTab.textContent === 'Changes in Organism Abundance given Actions Heatmap -- Quantitative -- Sunburst -- Sample Dependent'){
@@ -857,7 +953,10 @@ function checkboxClicked() {
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab4')
-        let sunburst = new Sunburst(35, 65, 'tab4', "sk__Bacteria__2", selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(35, 65, 'tab4', "sk__Bacteria__2", selectedOptions, removalPositions, 'old')
         sunburst.getData(selectedOptions, 'tab4')
     }
     else if (activeTab.textContent === 'Aggregate Organisms -- Sunburst -- All Samples Aggregated'){
@@ -876,7 +975,10 @@ function checkboxClicked() {
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab5')
-        let sunburst = new Sunburst(Number(cxValue1), Number(cxValue2), 'tab5', "sk__Bacteria__2", selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(Number(cxValue1), Number(cxValue2), 'tab5', "sk__Bacteria__2", selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab5')
     }
     else if (activeTab.textContent === 'All Organisms Heatmap -- Circular Treemap -- Sample Dependent'){
@@ -895,7 +997,10 @@ function checkboxClicked() {
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab6')
-        let sunburst = new Sunburst(Number(cxValue1), Number(cxValue2), 'tab6', "sk__Bacteria__2", selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(Number(cxValue1), Number(cxValue2), 'tab6', "sk__Bacteria__2", selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab6')
     }
     else if (activeTab.textContent === 'Indicator Organisms for Diseases Heatmap -- Circular Treemap -- Sample Dependent'){
@@ -903,7 +1008,10 @@ function checkboxClicked() {
         renderLegendDivs()
         removeVizDivs()
         renderVizDivs(selectedOptions.length, 'tab7')
-        let sunburst = new Sunburst(35, 65, 'tab7', "sk__Bacteria__2", selectedOptions)
+        let arr = [1, 2, 3, 4, 5, 6, 7];
+        let toRemove = findCheckedStatus()
+        let removalPositions = removeAndMap(arr, toRemove)
+        let sunburst = new Sunburst(35, 65, 'tab7', "sk__Bacteria__2", selectedOptions, removalPositions)
         sunburst.getData(selectedOptions, 'tab7')
     }
 }

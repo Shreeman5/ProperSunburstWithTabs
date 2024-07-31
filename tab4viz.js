@@ -2,8 +2,9 @@ class Tab4Viz{
 
     static Tab4VizRootName
     static Tab4VizData
+    static Tab4SelectedButtons
 
-    constructor(sliderMin, sliderMax, rootName, selectedOptions, structureData, classNames){
+    constructor(sliderMin, sliderMax, rootName, selectedOptions, structureData, classNames, selectedRemovals, tab4Boolean){
         this.sliderMin = sliderMin
         this.sliderMax = sliderMax
         this.rootName = rootName
@@ -11,6 +12,8 @@ class Tab4Viz{
         this.structureData = structureData
         this.classNames = classNames
         Tab4Viz.Tab4VizRootName = rootName
+        this.selectedRemovals = selectedRemovals
+        this.tab4Boolean = tab4Boolean
     }
 
     renderLegend(){
@@ -258,91 +261,164 @@ class Tab4Viz{
             .text("Bacteria needs to be the root of the hierarchy for the checkboxes functionality to be used.")
     }
 
+    findCheckedStatus(){
+        let counter = 0
+        const checkbox = document.querySelector('.checkbox-container #checkbox1');
+        const isChecked = checkbox.checked;
+        // console.log(isChecked);
+        if (isChecked === false){
+            return 0
+        }
+        const checkbox2 = document.querySelector('.checkbox-container #checkbox2');
+        const isChecked2 = checkbox2.checked;
+        // console.log(isChecked2);
+        if (isChecked2 === false){
+            return 0
+        }
+        const checkbox3 = document.querySelector('.checkbox-container #checkbox3');
+        const isChecked3 = checkbox3.checked;
+        // console.log(isChecked3);
+        if (isChecked3 === false){
+            return 0
+        }
+        const checkbox4 = document.querySelector('.checkbox-container #checkbox4');
+        const isChecked4 = checkbox4.checked;
+        // console.log(isChecked4);
+        if (isChecked4 === false){
+            return 0
+        }
+        const checkbox5 = document.querySelector('.checkbox-container #checkbox5');
+        const isChecked5 = checkbox5.checked;
+        // console.log(isChecked5);
+        if (isChecked5 === false){
+            return 0
+        }
+        const checkbox6 = document.querySelector('.checkbox-container #checkbox6');
+        const isChecked6 = checkbox6.checked;
+        // console.log(isChecked6);
+        if (isChecked6 === false){
+            return 0
+        }
+        const checkbox7 = document.querySelector('.checkbox-container #checkbox7');
+        const isChecked7 = checkbox7.checked;
+        // console.log(isChecked7);
+        if (isChecked7 === false){
+            return 0
+        }
+        return 1
+    }
+
 
     fillDropDown(){
-        let diseaseNames = this.structureData[2].map(item => item.Name);
-        const selectBox = document.getElementById('selectBox-T4');
-        let selectedValues = [];
-        let inputField = document.getElementById('selectInput-T4');
-        const selectedContainer = document.getElementById('selectedContainer-T4');
-        const that = this;  // Save the current context
+        // console.log(selectedValues)
+        const div = document.getElementById('selectedContainer-T4');
+        const buttons = div.querySelectorAll('button');
+        console.log(buttons.length);
 
-        function updateSelectedContainer() {
-            selectedContainer.innerHTML = '';
-            selectedValues.forEach((value, index) => {
-                const span = document.createElement('span');
-                span.textContent = value;
-
-                const removeButton = document.createElement('button');
-                removeButton.textContent = 'x';
-                removeButton.addEventListener('click', function() {
-                    selectedValues.splice(index, 1);
-                    updateSelectedContainer();
-                    removeVizDivs();
-                    renderVizDivs(selectedValues.length, 'tab4');
-                    console.log('A: ', selectedValues)
-                    that.render(selectedValues);
-                });
-
-                span.appendChild(removeButton);
-                selectedContainer.appendChild(span);
-            });
+        let checkedNumber = this.findCheckedStatus()
+        if (checkedNumber === 0){
+            console.log('Not everything checked')
+        }
+        else{
+            console.log('Everything checked')
         }
 
-        function clearSelections() {
-            selectedValues = [];
+        console.log(this.tab4Boolean)
+        
+        if (buttons.length === 0 || this.tab4Boolean === 'new'){
+            let diseaseNames = this.structureData[2].map(item => item.Name);
+            // console.log('A:', diseaseNames)
+            const selectBox = document.getElementById('selectBox-T4');
+            let selectedValues = [];
+            let inputField = document.getElementById('selectInput-T4');
+            const selectedContainer = document.getElementById('selectedContainer-T4');
+            const that = this;  // Save the current context
+
+            function updateSelectedContainer() {
+                // console.log('there')
+                selectedContainer.innerHTML = '';
+                selectedValues.forEach((value, index) => {
+                    const span = document.createElement('span');
+                    span.textContent = value;
+
+                    const removeButton = document.createElement('button');
+                    removeButton.textContent = 'x';
+                    removeButton.addEventListener('click', function() {
+                        selectedValues.splice(index, 1);
+                        updateSelectedContainer();
+                        Tab4Viz.Tab4SelectedButtons = selectedValues
+                        removeVizDivs();
+                        renderVizDivs(selectedValues.length, 'tab4');
+                        // console.log('A: ', selectedValues)
+                        that.render(selectedValues);
+                    });
+
+                    span.appendChild(removeButton);
+                    selectedContainer.appendChild(span);
+                });
+            }
+
+            function clearSelections() {
+                selectedValues = [];
+                updateSelectedContainer();
+            }
+
+            function initializeOptions() {
+                // console.log('here')
+                selectBox.innerHTML = ''; // Clear any existing options
+                diseaseNames.forEach(option => {
+                    let div = document.createElement('div');
+                    div.textContent = option;
+                    div.addEventListener('click', function() {
+                        if (!selectedValues.includes(this.innerText)) {
+                            selectedValues.push(this.innerText);
+                            updateSelectedContainer();
+                        }
+                        inputField.value = ''; // Clear input field after selection
+                        selectBox.style.display = 'none';
+                        Tab4Viz.Tab4SelectedButtons = selectedValues
+                        removeVizDivs();
+                        renderVizDivs(selectedValues.length, 'tab4');
+                        // console.log('B: ', selectedValues)
+                        that.render(selectedValues);
+                    });
+                    selectBox.appendChild(div);
+                });
+            }
+
+            inputField.addEventListener('input', function() {
+                let filter = this.value.toUpperCase();
+                let options = selectBox.getElementsByTagName('div');
+                for (let i = 0; i < options.length; i++) {
+                    let txtValue = options[i].textContent || options[i].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        options[i].style.display = "";
+                    } else {
+                        options[i].style.display = "none";
+                    }
+                }
+            });
+
+            inputField.addEventListener('focus', function() {
+                selectBox.style.display = 'block';
+                initializeOptions();
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!event.target.matches('#selectInput-T4') && !event.target.closest('.select-items-T4')) {
+                    selectBox.style.display = 'none';
+                }
+            });
+
+            // Ensure initial options are displayed
+            initializeOptions();
             updateSelectedContainer();
         }
-
-        function initializeOptions() {
-            selectBox.innerHTML = ''; // Clear any existing options
-            diseaseNames.forEach(option => {
-                let div = document.createElement('div');
-                div.textContent = option;
-                div.addEventListener('click', function() {
-                    if (!selectedValues.includes(this.innerText)) {
-                        selectedValues.push(this.innerText);
-                        updateSelectedContainer();
-                    }
-                    inputField.value = ''; // Clear input field after selection
-                    selectBox.style.display = 'none';
-                    removeVizDivs();
-                    renderVizDivs(selectedValues.length, 'tab4');
-                    // console.log('B: ', selectedValues)
-                    that.render(selectedValues);
-                });
-                selectBox.appendChild(div);
-            });
+        else{
+            removeVizDivs();
+            renderVizDivs(Tab4Viz.Tab4SelectedButtons.length, 'tab4');
+            this.render(Tab4Viz.Tab4SelectedButtons);
         }
-
-        inputField.addEventListener('input', function() {
-            let filter = this.value.toUpperCase();
-            let options = selectBox.getElementsByTagName('div');
-            for (let i = 0; i < options.length; i++) {
-                let txtValue = options[i].textContent || options[i].innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    options[i].style.display = "";
-                } else {
-                    options[i].style.display = "none";
-                }
-            }
-        });
-
-        inputField.addEventListener('focus', function() {
-            selectBox.style.display = 'block';
-            initializeOptions();
-        });
-
-        document.addEventListener('click', function(event) {
-            if (!event.target.matches('#selectInput-T4') && !event.target.closest('.select-items-T4')) {
-                selectBox.style.display = 'none';
-            }
-        });
-
-        // Ensure initial options are displayed
-        initializeOptions();
-        updateSelectedContainer();
-
     }
 
 
@@ -414,7 +490,6 @@ class Tab4Viz{
 
 
     handleMouseOver(event, fileIndex, p, nodeName, cdfContainerData, transformedData) {
-
         const hoveredPathId = "path-" + p.data.name + '-' + fileIndex
         // console.log(hoveredPathId)
     
@@ -434,6 +509,7 @@ class Tab4Viz{
             .style("stroke-width", 5);
             
         
+        
         let myVar = p.data.name
         let myNames = myVar.split("__")
         let index = myVar.indexOf("_")
@@ -443,17 +519,25 @@ class Tab4Viz{
         } 
         
         let lastIndex = nodeName.lastIndexOf('__')
+        let firstIndex = nodeName.indexOf('__')
+        let taxonName = nodeName.substring(firstIndex+2, lastIndex)
         let taxonID = nodeName.substring(lastIndex + 2)
-        let cdf = findTaxonCDFbyID(cdfContainerData, taxonID)
-
+        // let cdf = findTaxonCDFbyID(cdfContainerData, taxonID)
+        let cdf = findTaxonCDFbyName(cdfContainerData, taxonName)
         
         if (fileIndex % 2 === 0){
             // console.log('here')
-            let myWeight = findTaxonWeightbyID(transformedData, taxonID)
-            let myNames = findNamesbyID(transformedData, taxonID)
+            // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+            let myWeight = findTaxonWeightbyName(transformedData, taxonName)
+            // let myNames = findNamesbyID(transformedData, taxonID)
+            let myNames = findNamesbyName(transformedData, taxonName)
             let myChange = []
             let myChange2 = []
             // console.log(transformedData)
+            // if (p.data.name === 's__Streptococcus salivarius__1304'){
+            //     console.log(myWeight)
+            //     console.log(myNames)
+            // }
             
             if (cdf !== null && myWeight !== null){
                 for (let i = 0; i < myWeight.length; i++){
@@ -472,49 +556,68 @@ class Tab4Viz{
                 console.log(myChange)
                 let text = ''
                 for (let j = 0; j < myChange.length; j++){
-                    text = text + myChange[j] + myNames[j] + '\n'
+                    if (j === myChange.length - 1){
+                        text = text + myChange[j] + myNames[j]
+                    }
+                    else{
+                        text = text + myChange[j] + myNames[j] + '<br>'
+                    }
                 }
-                cdf = (cdf * 100).toFixed(3) + '%' + '\n' +  text
+                cdf = (cdf * 100).toFixed(3) + '%' + '<br>' +  text
                 console.log(cdf)
             }
             else if (myWeight !== null){
                 let counter = 0
                 for (let i = 0; i < myWeight.length; i++){
                     if (myWeight[i] < 0){
-                        counter -= 1
+                        counter = (counter + 0)/2
                         myChange2.push('Negative Influence:')
                     }
                     else if (myWeight[i] > 0){ 
-                        counter += 1
+                        counter = (counter + 1)/2
                         myChange2.push('Positive Influence:')
                     }
                 }
 
                 let text = ''
                 for (let j = 0; j < myChange2.length; j++){
-                    text = text + myChange2[j] + myNames[j] + '\n'
+                    if (j === myChange2.length - 1){
+                        text = text + myChange2[j] + myNames[j]
+                    }
+                    else{
+                        text = text + myChange2[j] + myNames[j] + '<br>'
+                    }
                 }
-                if (counter < 0){
-                    cdf = 'low' + '\n' + text
+                if (counter <= 0.35){
+                    cdf = 'low' + '<br>' + text
                 }
-                else if (counter > 0){
-                    cdf = 'high' + '\n' + text
+                else if (counter > 0.35 && counter <= 0.65){
+                    cdf = 'normal' + '<br>' + text
                 }
-                else{
-                    cdf = 'normal' + '\n' + text
+                else if (counter > 0.65){
+                    cdf = 'high' + '<br>' + text
                 }
             }
             else if (cdf !== null){
                 cdf = (parseFloat(cdf) * 100).toFixed(3) + '%'
             }
+            else{
+                cdf = '0%'
+            }
         }
         else{
-            cdf = (parseFloat(cdf) * 100).toFixed(3) + '%'
+            if (cdf === null){
+                cdf = '0%'
+            }
+            else{
+                cdf = (parseFloat(cdf) * 100).toFixed(3) + '%'
+            }
         }
 
 
     
-        let myVal = findNodeValueByName(cdfContainerData, taxonID)
+        // let myVal = findNodeValueByName(cdfContainerData, taxonID)
+        let myVal = findNodeValueByName(cdfContainerData, taxonName)
         if (myVal === undefined){
             myVal = 0 + '%'
         }
@@ -550,6 +653,13 @@ class Tab4Viz{
 
 
     render(diseaseName){
+        const div = document.getElementById('selectedContainer-T4');
+        const buttons = div.querySelectorAll('button');
+        console.log(buttons.length);
+        if (buttons.length === 0){
+            Tab4Viz.Tab4VizRootName = 'sk__Bacteria__2'
+            enableCheckboxes()
+        }
         // console.log(diseaseName)
         let sliderMin = this.sliderMin/100
         let sliderMax = this.sliderMax/100
@@ -650,16 +760,37 @@ class Tab4Viz{
 
             data = findChildByName(data, Tab4Viz.Tab4VizRootName)
 
+            let that = this
+            function processData(data) {
+                if (data && typeof data === 'object' && data.children && Array.isArray(data.children)) {
+                  assignValues(data);
+                } else {
+                  console.error("The data structure is not recognized or does not have a 'children' property.");
+                }
+            }
+
+            processData(data);
+
+
+            let hierarchy = d3.hierarchy(data).sum(d => d.value).sort((a, b) => b.value - a.value);
             let partition = d3.partition()
                     .size([2 * Math.PI, 100]);
-    
-            let hierarchy = d3.hierarchy(data)
-                .sum(function(d) { 
-                    return d.value; 
-                })
-                .sort(function(a, b) { return b.value - a.value; });
 
             let root = partition(hierarchy);
+
+            let arr = this.selectedRemovals
+            // Reassign children and remove nodes at depth x
+            for (let i = 0; i < arr.length; i++){
+                let numbers = arr[i]
+                let w = numbers[0]
+                let x = numbers[1]
+                root = reassignChildren(root, w, x); // Modify hierarchy
+                // console.log("Before recalculation:", root);
+                // root = this.recalculateValues(root); // Update node values based on number of children
+                // console.log("After recalculation:", root);
+                root = adjustDepths(root, x); // Adjust depths if needed
+                root = partition(root); // Reapply pack layout
+            }
             
             let findIN = new FindIndicators(this.structureData[1])
             let [myArray, myArray2, myArray3, myArray4] = findIN.returnIndicators()
@@ -701,7 +832,7 @@ class Tab4Viz{
                 }
             });
 
-            let arc = createArc(checkedLevels)//checkedLevels
+            let arc = createArc(findMaxDepth(root) - 1)//checkedLevels
             let colorScaleLow = d3.scaleLinear()
                        .domain([0, sliderMin])
                        .range(["#0200b9", "#00fff3"]);
@@ -711,7 +842,7 @@ class Tab4Viz{
                         .range(["#ff0000", "#7b0000"]);
 
             // console.log(selectedDataArray[i+3])
-            let that = this
+            // let that = this
             svg.selectAll("path")
                 .data(root.descendants().slice(1))
                 .enter().append("path")
@@ -720,15 +851,15 @@ class Tab4Viz{
                 .attr("d", arc)
                 .style("fill", function(d) { 
                     let nodeName = d.data.name
-                    // console.log(nodeName)
                     let lastIndex = nodeName.lastIndexOf('__')
                     let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
-                    let myname = nodeName.substring(firstIndex, lastIndex)
                     // console.log(myname)
                     // console.log(selectedDataArray[i])
                     if (i % 2 === 0){
-                        let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                         // console.log(cdf)
                         if (cdf === null){
                             return "white"
@@ -757,8 +888,10 @@ class Tab4Viz{
                         }
                     }
                     else{
-                        let myWeight = findTaxonWeightbyID(transformedData, taxonID)
-                        let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        let myWeight = findTaxonWeightbyName(transformedData, taxonName)
+                        // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
 
                         if (cdf !== null && myWeight !== null){
                             // console.log('C: ', cdf)
@@ -793,20 +926,26 @@ class Tab4Viz{
                         else if (myWeight !== null){
                             // console.log('B:', myWeight)
                             // console.log('F: ', myname)
-                            let counter = 0
+                            let number = 0
                             for (let i = 0; i < myWeight.length; i++){
                                 if (myWeight[i] < 0){
-                                    counter -= 1
+                                    number = (number + 0)/2
                                 }
                                 else if (myWeight[i] > 0){ 
-                                    counter += 1
+                                    number = (number + 1)/2
                                 }
                             }
 
-                            if (counter < 0){
+                            if (number < 0){
                                 return colorScaleLow(0)
                             }
-                            else if (counter > 0){
+                            else if (number >= 0 && number < sliderMin){
+                                return colorScaleLow(number)
+                            }
+                            else if (number >= sliderMax && number <= 1){
+                                return colorScaleHigh(number)
+                            }
+                            else if (number > 1){
                                 return colorScaleHigh(1)
                             }
                             else{
@@ -840,10 +979,13 @@ class Tab4Viz{
                 .style("stroke", function(d){
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
                     // console.log(selectedDataArray[i])
                     if (i % 2 === 0){
-                        let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                         // console.log(cdf)
                         if (cdf === null){
                             return "grey"
@@ -853,9 +995,11 @@ class Tab4Viz{
                         }
                     }
                     else{
-                        let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        let myWeight = findTaxonWeightbyName(transformedData, taxonName)
                         if (myWeight === null){         
-                            let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                             if (cdf === null){
                                 return "grey"
                             }
@@ -871,10 +1015,13 @@ class Tab4Viz{
                 .style("opacity", function(d){
                     let nodeName = d.data.name
                     let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
                     let taxonID = nodeName.substring(lastIndex + 2)
 
                     if (i % 2 === 0){
-                        let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                         if (cdf === null){
                             return "0.1"
                         }
@@ -883,9 +1030,11 @@ class Tab4Viz{
                         }
                     }
                     else{
-                        let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        let myWeight = findTaxonWeightbyName(transformedData, taxonName)
                         if (myWeight === null){         
-                            let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
                             if (cdf === null){
                                 return "0.1"
                             }
@@ -899,6 +1048,40 @@ class Tab4Viz{
                     } 
                 }) 
                 .style("stroke-width", function(d){
+                    let nodeName = d.data.name
+                    let lastIndex = nodeName.lastIndexOf('__')
+                    let firstIndex = nodeName.indexOf('__')
+                    let taxonName = nodeName.substring(firstIndex+2, lastIndex)
+                    let taxonID = nodeName.substring(lastIndex + 2)
+
+                    if (i % 2 === 0){
+                        // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                        let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
+                        if (cdf === null){
+                            return "0.1"
+                        }
+                        else{
+                            return "1"
+                        }
+                    }
+                    else{
+                        // let myWeight = findTaxonWeightbyID(transformedData, taxonID)
+                        let myWeight = findTaxonWeightbyName(transformedData, taxonName)
+                        if (myWeight === null){         
+                            // let cdf = findTaxonCDFbyID(selectedDataArray[i+3], taxonID)
+                            let cdf = findTaxonCDFbyName(selectedDataArray[i+3], taxonName)
+                            if (cdf === null){
+                                return "0.1"
+                            }
+                            else{
+                                return "1"
+                            }
+                        }
+                        else{
+                            return "5"
+                        }
+                    } 
+
                     if (d.depth === 1){
                         return "1"
                     }
@@ -925,7 +1108,7 @@ class Tab4Viz{
                         console.log('here')
                         Tab4Viz.Tab4VizRootName = p.data.name
                         console.log('X:', Tab4Viz.Tab4VizRootName)
-
+                        that.selectedRemovals = []
                         removeVizDivs()
                         renderVizDivs(that.selectedOptions.length, 'tab4')
                         removeLegendDivs()
@@ -961,6 +1144,8 @@ class Tab4Viz{
                     console.log('D:', Tab4Viz.Tab4VizRootName)
                     if (Tab4Viz.Tab4VizRootName !== undefined){
                         if (Tab4Viz.Tab4VizRootName === 'sk__Bacteria__2'){
+                            that.selectedRemovals = []
+                            enableCheckboxes2()
                             removeVizDivs()
                             renderVizDivs(that.selectedOptions.length, 'tab4')
                             removeLegendDivs()
